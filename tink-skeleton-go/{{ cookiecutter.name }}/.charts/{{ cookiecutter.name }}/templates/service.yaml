@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ cookiecutter.kubernetes_name }}
+  namespace: {{ cookiecutter.kubernetes_namespace }}
+spec:
+  ports:
+  - port: 80
+    targetPort: http-api
+    name: http-api
+  selector:
+    app: {{ cookiecutter.kubernetes_name }}

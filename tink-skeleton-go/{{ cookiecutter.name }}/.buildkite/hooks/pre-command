@@ -1,0 +1,4 @@
+#!/bin/bash
+set -xe
+
+export VERSION="$BUILDKITE_BUILD_NUMBER"

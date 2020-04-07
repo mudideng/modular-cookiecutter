@@ -1,0 +1,10 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ cookiecutter.kubernetes_name }}
+  namespace: {{ cookiecutter.kubernetes_namespace }}
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: {{ cookiecutter.kubernetes_name }}

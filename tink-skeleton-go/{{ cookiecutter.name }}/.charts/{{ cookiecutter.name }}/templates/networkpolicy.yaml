@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-allow-dns # Default-deny for both ingress and egress that allow DNS lookups to kube-system.
+  namespace: {{ cookiecutter.kubernetes_namespace }}
+spec:
+  podSelector: {}
+  egress:
+    - ports:
+        - port: 53
+          protocol: TCP
+        - port: 53
+          protocol: UDP
+      to:
+        - namespaceSelector:
+            matchLabels:
+              service: kube-system
+    - ports:
+        - port: 53
+          protocol: TCP
+        - port: 53
+          protocol: UDP
+      to:
+        - ipBlock:
+            cidr: 10.32.0.0/16
+        - ipBlock:
+            cidr: 10.200.0.0/16
+  policyTypes:
+    - Ingress
+    - Egress

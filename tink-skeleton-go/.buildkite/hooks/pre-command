@@ -1,0 +1,9 @@
+#!/bin/bash
+set -xe
+
+export VERSION="$BUILDKITE_BUILD_NUMBER"
+
+if [[ "${TINK_EXTRACT_ARCHIVE-x}" != "x" ]]; then
+    buildkite-agent artifact download tink-demo-service.tar.gz ./
+    tar xzvf tink-demo-service.tar.gz
+fi

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ cookiecutter.kubernetes_name }}
+  namespace: {{ cookiecutter.kubernetes_namespace }}
+  labels:
+    app: {{ cookiecutter.kubernetes_name }}
+spec:
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: {{ cookiecutter.kubernetes_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ cookiecutter.kubernetes_name }}
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65535
+        runAsGroup: 65535
+        fsGroup: 65535
+
+      containers:
+      - name: {{ cookiecutter.kubernetes_name }}
+        resources:
+          {%- raw %}
+          requests:
+            memory: {{ .Values.podMemoryRequest | default "50Mi" }}
+            cpu: {{ .Values.podCpuRequest | default "500m" }}
+          limits:
+            memory: {{ .Values.podMemoryLimit | default "50Mi" }}
+            cpu: {{ .Values.podCpuLimit| default "500m" }}
+          {%- endraw %}
+        image: gcr.io/tink-containers/{{ cookiecutter.name }}:{{ "{{" }} .Files.Get "tink-versions/{{ cookiecutter.name }}.txt" | default "latest" {{ "}}" }}
+        imagePullPolicy: IfNotPresent
+
+        securityContext:
+          readOnlyRootFilesystem: true
+
+        ports:
+        - name: http-api
+          containerPort: 8080
+        - name: metrics
+          containerPort: 9130
+
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          periodSeconds: 10
+          failureThreshold: 10
+          timeoutSeconds: 1
+
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          periodSeconds: 3
+          failureThreshold: 3
+          timeoutSeconds: 1
+
+      imagePullSecrets:
+        - name: tink-containers
+
+{% raw %}{{- if eq "local" .Values.Cluster }}{% endraw %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ cookiecutter.kubernetes_namespace }}
+{% raw %}{{ end }}{% endraw %}

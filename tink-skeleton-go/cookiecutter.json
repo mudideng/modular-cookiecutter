@@ -1,0 +1,7 @@
+{
+  "name": "tink-demo-service",
+  "kubernetes_name": "{{ cookiecutter.name | replace('tink-', '') }}",
+  "kubernetes_namespace": "{{ cookiecutter.kubernetes_name | replace('-service', '') | replace('service-', '') }}",
+  "root_package": "{{ cookiecutter.name | replace('tink-', '') | replace('-service', '') | replace('-', '_') }}",
+  "git_init": 1
+}

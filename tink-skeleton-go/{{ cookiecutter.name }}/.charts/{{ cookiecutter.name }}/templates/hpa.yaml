@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ cookiecutter.kubernetes_name }}
+  namespace: {{ cookiecutter.kubernetes_namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ cookiecutter.kubernetes_name }}
+  {%- raw %}
+  minReplicas: {{ .Values.minReplicas | default 2 }}
+  maxReplicas: {{ .Values.maxReplicas | default 5 }}
+  {%- endraw %}
+  metrics:
+  - type: Pods
+    pods:
+      metricName: cpu_usage
+      targetAverageValue: "450m"

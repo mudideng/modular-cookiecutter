@@ -1,0 +1,93 @@
+steps:
+  - name: ':hammer: Linting'
+    # We are running bors-ng which does fast-forward merges into `master`. No
+    # reason to rerun the tests.
+    branches: '!master'
+    command: |
+      .buildkite/run-linting.sh
+    timeout_in_minutes: 10
+    plugins:
+      docker-compose#v2.5.1:
+        run: app
+        config: .buildkite/docker/docker-compose.go.yml
+  - name: ':go: :white_check_mark: Unit tests'
+    # Bors-ng does forward merges from `staging` branch into `master`, so
+    # strictly we wouldn't have to run the unit tests for the `master` branch.
+    # However, we want to report code coverage to Codecov also for `master`
+    # branch, so we are running tests for all branches.
+    #branches: '!master'
+    command: |
+      .buildkite/run-tests-unit-tests.sh
+    timeout_in_minutes: 10
+    plugins:
+      docker-compose#v2.5.1:
+        run: app
+        config: .buildkite/docker/docker-compose.go.yml
+
+  - name: ':docker: Build Go binary'
+    branches: '!master'
+    timeout_in_minutes: 30
+    command: |
+      .buildkite/run-build.sh
+    plugins:
+      docker-compose#v2.5.1:
+        run: app
+        config: .buildkite/docker/docker-compose.go.yml
+      artifacts#v1.2.0:
+        upload:
+        - ./bin/{{ cookiecutter.name }}
+
+  - name: ":kubernetes: Helm Lint"
+    branches: '!master'
+    command: /go/bin/kubernetes-generator --mode lint --repo .
+    plugins:
+      docker#v2.0.0:
+        image: gcr.io/tink-containers/kubernetes-generator:latest
+        always-pull: true
+
+  - wait
+
+  # Make sure image can be build
+  - name: ':docker: Build Docker image'
+    branches: '!master !staging'
+    timeout_in_minutes: 30
+    command: |
+      mv bin/{{ cookiecutter.name }} ./
+      chmod +x ./{{ cookiecutter.name }}
+
+      # Build
+      docker build -t {{ cookiecutter.name }}:$VERSION .
+    plugins:
+      artifacts#v1.2.0:
+        download:
+        - bin/{{ cookiecutter.name }}
+
+  - name: ':docker: Push Docker image to tink-containers'
+    branches: 'staging'
+    timeout_in_minutes: 30
+    command: |
+      mv bin/{{ cookiecutter.name }} ./
+      chmod +x ./{{ cookiecutter.name }}
+
+      # Build
+      docker build -t {{ cookiecutter.name }}:$VERSION .
+
+      # Tag and push images with version number to repository
+      docker tag {{ cookiecutter.name }}:$VERSION gcr.io/tink-containers/{{ cookiecutter.name }}:$VERSION
+      gcloud docker -- push gcr.io/tink-containers/{{ cookiecutter.name }}:$VERSION
+
+      # Tag and push images as latest to repository
+      docker tag {{ cookiecutter.name }}:$VERSION gcr.io/tink-containers/{{ cookiecutter.name }}:latest
+      gcloud docker -- push gcr.io/tink-containers/{{ cookiecutter.name }}:latest
+    plugins:
+      artifacts#v1.2.0:
+        download:
+        - bin/{{ cookiecutter.name }}
+
+  # Uncomment if we want to start releasing this application.
+  #- wait
+  #- name: ':pipeline: Triggering release pipelines'
+  #  branches: staging
+  #  command: .buildkite/generate-trigger-steps-master.py | buildkite-agent pipeline upload
+  #  agents:
+  #    queue: new

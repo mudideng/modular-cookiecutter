@@ -1,0 +1,19 @@
+version: '2'
+services:
+  app:
+    build: {{ cookiecutter.name }}
+    image: tink/{{ cookiecutter.name }}
+    working_dir: /go/src/github.com/tink-ab/{{ cookiecutter.name }}
+    volumes:
+      - "${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}"
+      - ../..:/go/src/github.com/tink-ab/{{ cookiecutter.name }}
+    environment:
+      - SSH_AUTH_SOCK
+      - BUILDKITE_AGENT_ACCESS_TOKEN
+      - BUILDKITE_JOB_ID
+      - BUILDKITE_BUILD_ID
+      - BUILDKITE_BUILD_NUMBER
+      - VERSION
+      - TINK_REPO_UPLOAD_ACCESS_KEY_ID
+      - TINK_REPO_UPLOAD_SECRET_ACCESS_KEY
+      - CODECOV_TOKEN

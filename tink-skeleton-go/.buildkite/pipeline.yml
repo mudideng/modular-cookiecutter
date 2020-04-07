@@ -1,0 +1,87 @@
+steps:
+  # Generate a project and run the pipeline on it
+  - name: ':cookie: Generate project with cookiecutter'
+    branches: '!master'
+    command: |
+      .buildkite/run-cookiecutter.sh
+    plugins:
+      docker#v2.0.0:
+        image: gcr.io/tink-containers/cookiecutter:latest
+        always-pull: true
+        shell:
+        - "-e"
+        - "-c"
+        entrypoint: /bin/sh
+      artifacts#v1.2.0:
+        upload:
+        - ./tink-demo-service.tar.gz
+
+  - wait
+
+  - name: ':hammer: Linting'
+    branches: '!master'
+    command: |
+      .buildkite/run-linting.sh
+    timeout_in_minutes: 10
+    env:
+      TINK_EXTRACT_ARCHIVE: "true"
+    plugins:
+      docker-compose#v2.5.1:
+        run: app
+        config: tink-demo-service/.buildkite/docker/docker-compose.go.yml
+
+  - name: ':go: :white_check_mark: Unit tests'
+    branches: '!master'
+    command: |
+      .buildkite/run-tests-unit-tests.sh
+    timeout_in_minutes: 10
+    env:
+      TINK_EXTRACT_ARCHIVE: "true"
+    plugins:
+      docker-compose#v2.5.1:
+        run: app
+        config: tink-demo-service/.buildkite/docker/docker-compose.go.yml
+
+  - name: ':docker: Build Go binary'
+    branches: '!master'
+    timeout_in_minutes: 30
+    command: |
+      .buildkite/run-build.sh
+    env:
+      TINK_EXTRACT_ARCHIVE: "true"
+    plugins:
+      docker-compose#v2.5.1:
+        run: app
+        config: tink-demo-service/.buildkite/docker/docker-compose.go.yml
+      artifacts#v1.2.0:
+        upload:
+        - ./tink-demo-service/bin/tink-demo-service
+
+  - name: ":kubernetes: Helm Lint"
+    branches: '!master'
+    command: /go/bin/kubernetes-generator --mode lint --repo tink-demo-service
+    env:
+      TINK_EXTRACT_ARCHIVE: "true"
+    plugins:
+      docker#v2.0.0:
+        image: gcr.io/tink-containers/kubernetes-generator:latest
+        always-pull: true
+
+  - wait
+
+  # Make sure image can be build
+  - name: ':docker: Build Docker image'
+    branches: '!master'
+    timeout_in_minutes: 30
+    command: |
+      chmod +x tink-demo-service/bin/tink-demo-service
+      mv tink-demo-service/bin/tink-demo-service tink-demo-service/
+
+      # Build
+      docker build -t tink-demo-service:$VERSION tink-demo-service
+    env:
+      TINK_EXTRACT_ARCHIVE: "true"
+    plugins:
+      artifacts#v1.2.0:
+        download:
+        - tink-demo-service/bin/tink-demo-service
