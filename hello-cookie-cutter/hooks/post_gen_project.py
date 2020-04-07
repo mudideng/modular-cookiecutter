@@ -13,6 +13,7 @@ def delete_resources_for_disabled_features():
             if not feature['enabled']:
                 print "removing resources for disabled feature {}...".format(feature['name'])
                 for resource in feature['resources']:
+                    print(resource)
                     delete_resource(resource)
     print "cleanup complete, removing manifest..."
     delete_resource(MANIFEST)
