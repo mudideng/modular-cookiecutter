@@ -1,0 +1,10 @@
+features:
+  - name: feature1
+    enabled: {{cookiecutter.feature1|lower}}
+    resources:
+      ./{{cookiecutter.project_name}}/{{cookiecutter.file_name1}}.py
+
+  - name: feature2
+    enabled: {{cookiecutter.feature2|lower}}
+    resources:
+      - ./{{cookiecutter.project_name}}/{{cookiecutter.file_name2}}.py

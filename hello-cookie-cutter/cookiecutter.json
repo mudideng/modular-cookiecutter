@@ -1,6 +1,10 @@
 {
-    "directory_name": "Hello",
+    "project_name": "Hello",
     "feature1": [true, false],
-    "file_name": "Howdy",
-    "greeting_recipient": "Julie"
+    "file_name1": "file1",
+    "filecontent1": "somecontent",
+
+    "feature2": [true, false],
+    "file_name2": "file2",
+    "filecontent2": "morecontent"
 }
