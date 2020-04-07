@@ -87,3 +87,24 @@ cookiecutter('./{}/'.format(charts_folder),
             output_dir=project_name,
             overwrite_if_exists=True,
             extra_context=charts_context)
+
+
+### Create main file
+import os
+
+path = project_name
+
+# if not os.path.exists(path):
+#     os.makedirs(path)
+
+filename = 'main.py'
+full_filepath = os.path.join(path, filename)
+
+temp_original = ""
+with open(full_filepath, 'r') as original: temp_original = original.read()
+with open(full_filepath, 'w') as modified:
+    modified.write("from {} import {}\n".format(database_type, database_type))
+    modified.write(temp_original)
+
+with open(full_filepath, 'a') as temp_file:
+    temp_file.write('\n{}.init()'.format(database_type))

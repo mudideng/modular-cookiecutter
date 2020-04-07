@@ -1,2 +1,2 @@
-print("Hello, {{cookiecutter.filecontent}}")
-
+def init():
+    print("Hello, {{cookiecutter.filecontent}}")
