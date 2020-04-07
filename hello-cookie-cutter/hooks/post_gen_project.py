@@ -5,6 +5,8 @@ import yaml
 
 MANIFEST = "manifest.yml"
 
+print("Project path: {}".format(os.getcwd()))
+
 
 def delete_resources_for_disabled_features():
     with open(MANIFEST) as manifest_file:
@@ -13,8 +15,9 @@ def delete_resources_for_disabled_features():
             if not feature['enabled']:
                 print "removing resources for disabled feature {}...".format(feature['name'])
                 for resource in feature['resources']:
-                    print(resource)
-                    delete_resource(resource)
+                    full_path = os.path.join(os.getcwd(),resource)
+                    print("Resource path: {}".format(full_path))
+                    delete_resource(full_path)
     print "cleanup complete, removing manifest..."
     delete_resource(MANIFEST)
 
