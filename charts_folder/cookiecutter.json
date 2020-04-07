@@ -1,0 +1,7 @@
+{
+  "module_name": "some_module",
+  "kubernetes_namespace": "some_namespace",
+  "file_name": "some_file",
+  "database": "",
+  "database_deployment": "Some content"
+}

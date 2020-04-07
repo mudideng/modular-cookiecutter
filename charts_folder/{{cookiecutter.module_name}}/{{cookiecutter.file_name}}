@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{cookiecutter.kubernetes_namespace}}
+  namespace: {{cookiecutter.kubernetes_namespace}}
+  labels:
+    app: {{cookiecutter.kubernetes_namespace}}
+
+  # Generated from modules
+
+  {%- if cookiecutter.database == "mysql" -%}
+{{cookiecutter.database_deployment}}
+  {%- elif cookiecutter.database == "cassandra" -%}
+{{cookiecutter.database_deployment}}
+  {% endif %}
