@@ -40,7 +40,7 @@ if need_database:
     db_context = {
         'module_name': database_type,
         'file_name': '{}.py'.format(database_type),
-        'filecontent': 'Some content from init',
+        'filecontent': 'Print {} content from init'.format(database_type),
     }
     # Create database from the cookiecutter-pypackage/ template
     cookiecutter('./{}/'.format(database_type),
