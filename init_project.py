@@ -13,9 +13,8 @@ charts_contexts = []
 #Prompt users to add their startup configs here
 project_name = raw_input("What's the project name?: ")
 need_database = raw_input("Do you need a database? [y/n]: ")
-
 database_type = ""
-if need_database:
+if need_database == "y":
     database_type = raw_input("Choose one [mysql/cassandra]: ")
 
 
@@ -35,7 +34,7 @@ cookiecutter('./hello-cookie-cutter/',
             extra_context=extra_context)
 
 ### Create database module
-if need_database:
+if need_database == "y":
     # Ask for user input to put into context
     db_context = {
         'module_name': database_type,
@@ -103,8 +102,9 @@ full_filepath = os.path.join(path, filename)
 temp_original = ""
 with open(full_filepath, 'r') as original: temp_original = original.read()
 with open(full_filepath, 'w') as modified:
-    modified.write("from {} import {}\n".format(database_type, database_type))
+    if need_database == "y":
+        modified.write("from {} import {}\n".format(database_type, database_type))
     modified.write(temp_original)
-
-with open(full_filepath, 'a') as temp_file:
-    temp_file.write('\n{}.init()'.format(database_type))
+if need_database == "y":
+    with open(full_filepath, 'a') as temp_file:
+        temp_file.write('\n{}.init()'.format(database_type))
